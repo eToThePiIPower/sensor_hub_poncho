@@ -24,13 +24,20 @@ config :nerves, :erlinit, update_clock: true
 # * See https://hexdocs.pm/nerves_ssh/readme.html for general SSH configuration
 # * See https://hexdocs.pm/ssh_subsystem_fwup/readme.html for firmware updates
 
-keys =
+system_keys =
   [
     Path.join([System.user_home!(), ".ssh", "id_rsa.pub"]),
     Path.join([System.user_home!(), ".ssh", "id_ecdsa.pub"]),
     Path.join([System.user_home!(), ".ssh", "id_ed25519.pub"])
   ]
   |> Enum.filter(&File.exists?/1)
+
+repo_keys =
+  Path.wildcard("./authorized_keys/*.pub")
+  |> Enum.map(fn p -> Path.join(File.cwd!(), p) end)
+  |> Enum.filter(&File.exists?/1)
+
+keys = system_keys ++ repo_keys
 
 if keys == [],
   do:
